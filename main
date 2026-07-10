@@ -1,0 +1,30 @@
+founder-build-program/
+
+│
+├── docs/
+│   ├── business/
+│   ├── architecture/
+│   ├── standards/
+│   ├── meeting-notes/
+│   └── roadmap/
+│
+├── projects/
+│
+├── templates/
+│
+├── scripts/
+│
+├── diagrams/
+│
+├── branding/
+│
+├── website/
+│
+├── assets/
+│
+├── .github/
+│
+├── README.md
+├── ROADMAP.md
+├── CHANGELOG.md
+└── LICENSE
