@@ -1,0 +1,34 @@
+# Terraform working directories
+**/.terraform/*
+
+# Terraform state
+*.tfstate
+*.tfstate.*
+*.tfstate.backup
+
+# Environment-specific variable files
+*.tfvars
+*.tfvars.json
+
+# Keep example variable files
+!*.tfvars.example
+
+# Saved Terraform plans
+*.tfplan
+tfplan
+
+# Terraform crash files
+crash.log
+crash.*.log
+
+# Local overrides
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Editors and operating systems
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
