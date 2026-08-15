@@ -5,17 +5,15 @@ on:
     branches:
       - main
     paths:
-      - paths:
-  - "projects/cloud-starter-kit/infrastructure/terraform/**"
-  - ".github/workflows/terraform-check.yml"
+      - "projects/cloud-starter-kit/infrastructure/terraform/**"
+      - ".github/workflows/terraform-check.yml"
 
   push:
     branches:
       - main
     paths:
-      - paths:
-  - "projects/cloud-starter-kit/infrastructure/terraform/**"
-  - ".github/workflows/terraform-check.yml"
+      - "projects/cloud-starter-kit/infrastructure/terraform/**"
+      - ".github/workflows/terraform-check.yml"
 
 permissions:
   contents: read
