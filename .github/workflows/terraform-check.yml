@@ -17,6 +17,7 @@ on:
 
 permissions:
   contents: read
+  id-token: write
 
 concurrency:
   group: terraform-check-${{ github.ref }}
@@ -45,8 +46,38 @@ jobs:
       - name: Terraform Format Check
         run: terraform fmt -check -recursive
 
-      - name: Terraform Initialize
+      - name: Terraform Initialize for Validation
         run: terraform init -backend=false -input=false
 
       - name: Terraform Validate
         run: terraform validate -no-color
+
+      - name: Configure AWS Credentials
+        if: >
+          github.event_name == 'pull_request' &&
+          github.event.pull_request.head.repo.full_name == github.repository
+        uses: aws-actions/configure-aws-credentials@v6.2.3
+        with:
+          role-to-assume: arn:aws:iam::213424233863:role/cloud-starter-kit-dev-github-plan-role
+          aws-region: ap-southeast-1
+          role-session-name: terraform-plan-${{ github.run_id }}
+          allowed-account-ids: "213424233863"
+          mask-aws-account-id: true
+
+      - name: Verify AWS Identity
+        if: >
+          github.event_name == 'pull_request' &&
+          github.event.pull_request.head.repo.full_name == github.repository
+        run: aws sts get-caller-identity
+
+      - name: Terraform Initialize Remote Backend
+        if: >
+          github.event_name == 'pull_request' &&
+          github.event.pull_request.head.repo.full_name == github.repository
+        run: terraform init -reconfigure -input=false
+
+      - name: Terraform Plan
+        if: >
+          github.event_name == 'pull_request' &&
+          github.event.pull_request.head.repo.full_name == github.repository
+        run: terraform plan -lock=false -input=false -no-color
