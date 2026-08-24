@@ -4,8 +4,13 @@ output "web_instance_id" {
 }
 
 output "web_public_ip" {
-  description = "Public IPv4 address of the application host."
-  value       = aws_instance.web.public_ip
+  description = "Stable public IPv4 address of the application host."
+  value       = aws_eip.web.public_ip
+}
+
+output "web_elastic_ip_allocation_id" {
+  description = "Allocation ID of the application host Elastic IP."
+  value       = aws_eip.web.id
 }
 
 output "web_public_dns" {
@@ -15,7 +20,7 @@ output "web_public_dns" {
 
 output "web_url" {
   description = "HTTP URL for the Cloud Starter Kit demonstration page."
-  value       = "http://${aws_instance.web.public_ip}"
+  value       = "http://${aws_eip.web.public_ip}"
 }
 
 output "session_manager_command" {
