@@ -33,6 +33,10 @@ resource "aws_instance" "web" {
   }
 
   lifecycle {
+    ignore_changes = [
+      ami,
+    ]
+
     precondition {
       condition     = var.root_volume_size >= 8
       error_message = "The EC2 root volume must be at least 8 GiB."
