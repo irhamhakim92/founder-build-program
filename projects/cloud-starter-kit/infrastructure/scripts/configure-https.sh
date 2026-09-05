@@ -29,8 +29,20 @@ docker run \
   --volume /opt/cloud-starter/html:/usr/share/nginx/html:ro \
   nginx:alpine
 
-# Verify the backend before configuring the proxy.
-curl --fail --silent --show-error http://127.0.0.1:8080 >/dev/null
+# Wait for the backend before configuring the proxy.
+for attempt in {1..10}; do
+  if curl --fail --silent --show-error http://127.0.0.1:8080 >/dev/null; then
+    echo "Backend is healthy."
+    break
+  fi
+
+  if [[ "${attempt}" -eq 10 ]]; then
+    echo "Backend failed to become healthy." >&2
+    exit 1
+  fi
+
+  sleep 2
+done
 
 # Install Caddy when it is not already installed.
 if ! command -v caddy >/dev/null 2>&1; then
