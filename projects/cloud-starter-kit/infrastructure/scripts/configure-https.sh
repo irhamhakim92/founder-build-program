@@ -1,13 +1,20 @@
 #!/usr/bin/env bash
 
 set -euo pipefail
-
+if [[ "${EUID}" -ne 0 ]]; then
+  echo "Run this script as root or with sudo." >&2
+  exit 1
+fi
 DOMAIN="${1:-demo.legatratechnologies.com}"
 
 echo "Configuring HTTPS for ${DOMAIN}"
 
 export DEBIAN_FRONTEND=noninteractive
-
+# Ensure curl is available for health checks and downloads.
+if ! command -v curl >/dev/null 2>&1; then
+  apt-get update
+  apt-get install -y curl
+fi
 # Ensure Docker is installed and running.
 if ! command -v docker >/dev/null 2>&1; then
   apt-get update
