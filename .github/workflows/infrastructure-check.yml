@@ -51,4 +51,4 @@ jobs:
           docker run --rm \
             -v "${GITHUB_WORKSPACE}/projects/cloud-starter-kit/infrastructure/caddy/Caddyfile:/etc/caddy/Caddyfile:ro" \
             caddy:2-alpine \
-            validate --config /etc/caddy/Caddyfile --adapter caddyfile
+            caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile
