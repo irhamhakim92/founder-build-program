@@ -1,0 +1,54 @@
+name: Infrastructure Check
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "projects/cloud-starter-kit/infrastructure/scripts/**"
+      - "projects/cloud-starter-kit/infrastructure/caddy/**"
+      - ".github/workflows/infrastructure-check.yml"
+
+  push:
+    branches:
+      - main
+    paths:
+      - "projects/cloud-starter-kit/infrastructure/scripts/**"
+      - "projects/cloud-starter-kit/infrastructure/caddy/**"
+      - ".github/workflows/infrastructure-check.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: infrastructure-check-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  infrastructure-check:
+    name: Infrastructure Script and Caddy Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Validate Bash syntax
+        run: |
+          bash -n projects/cloud-starter-kit/infrastructure/scripts/configure-https.sh
+
+      - name: Install ShellCheck
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y shellcheck
+
+      - name: Run ShellCheck
+        run: |
+          shellcheck projects/cloud-starter-kit/infrastructure/scripts/configure-https.sh
+
+      - name: Validate Caddyfile
+        run: |
+          docker run --rm \
+            -v "${GITHUB_WORKSPACE}/projects/cloud-starter-kit/infrastructure/caddy/Caddyfile:/etc/caddy/Caddyfile:ro" \
+            caddy:2-alpine \
+            validate --config /etc/caddy/Caddyfile --adapter caddyfile
