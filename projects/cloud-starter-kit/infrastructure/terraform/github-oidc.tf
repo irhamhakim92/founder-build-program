@@ -106,6 +106,31 @@ data "aws_iam_policy_document" "github_actions_plan_permissions" {
   }
 
   statement {
+    sid    = "ReadCloudWatch"
+    effect = "Allow"
+
+    actions = [
+      "cloudwatch:Describe*",
+      "cloudwatch:Get*",
+      "cloudwatch:List*",
+    ]
+
+    resources = ["*"]
+  }
+
+  statement {
+    sid    = "ReadSNS"
+    effect = "Allow"
+
+    actions = [
+      "sns:Get*",
+      "sns:List*",
+    ]
+
+    resources = ["*"]
+  }
+
+  statement {
     sid    = "ListTerraformStateBucket"
     effect = "Allow"
 
@@ -140,6 +165,8 @@ data "aws_iam_policy_document" "github_actions_plan_permissions" {
     ]
   }
 }
+
+
 
 resource "aws_iam_role_policy" "github_actions_plan" {
   name = "${local.name_prefix}-github-plan-policy"
