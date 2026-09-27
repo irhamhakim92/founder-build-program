@@ -131,6 +131,18 @@ data "aws_iam_policy_document" "github_actions_plan_permissions" {
   }
 
   statement {
+    sid    = "ReadDLM"
+    effect = "Allow"
+
+    actions = [
+      "dlm:Get*",
+      "dlm:List*",
+    ]
+
+    resources = ["*"]
+  }
+
+  statement {
     sid    = "ListTerraformStateBucket"
     effect = "Allow"
 
