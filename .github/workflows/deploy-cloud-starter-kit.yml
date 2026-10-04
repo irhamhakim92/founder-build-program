@@ -1,0 +1,310 @@
+name: Deploy Cloud Starter Kit
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "projects/cloud-starter-kit/application/**"
+      - ".github/workflows/deploy-cloud-starter-kit.yml"
+
+  push:
+    branches:
+      - main
+    paths:
+      - "projects/cloud-starter-kit/application/**"
+      - ".github/workflows/deploy-cloud-starter-kit.yml"
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cloud-starter-kit-deploy-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  AWS_REGION: ap-southeast-1
+  APP_PATH: projects/cloud-starter-kit/application/index.html
+  APP_URL: https://demo.legatratechnologies.com
+
+jobs:
+  validate:
+    name: Validate application
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Validate application file
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          test -s "${APP_PATH}"
+          grep -q '<title>Cloud Starter Kit</title>' "${APP_PATH}"
+
+          echo "Application validation passed."
+
+  deploy:
+    name: Deploy application
+    runs-on: ubuntu-latest
+    needs:
+      - validate
+
+    if: >
+      github.event_name != 'pull_request' &&
+      github.ref == 'refs/heads/main'
+
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v6.2.3
+        with:
+          role-to-assume: arn:aws:iam::213424233863:role/cloud-starter-kit-dev-github-deploy-role
+          aws-region: ${{ env.AWS_REGION }}
+          role-session-name: cloud-starter-deploy-${{ github.run_id }}
+          allowed-account-ids: "213424233863"
+          mask-aws-account-id: true
+
+      - name: Verify AWS identity
+        run: aws sts get-caller-identity
+
+      - name: Find deployment target
+        id: target
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          INSTANCE_IDS=$(aws ec2 describe-instances \
+            --region "${AWS_REGION}" \
+            --filters \
+              "Name=tag:Role,Values=application-host" \
+              "Name=instance-state-name,Values=running" \
+            --query 'Reservations[].Instances[].InstanceId' \
+            --output text)
+
+          if [[ -z "${INSTANCE_IDS}" || "${INSTANCE_IDS}" == "None" ]]; then
+            echo "No running application-host instance was found." >&2
+            exit 1
+          fi
+
+          read -r -a IDS <<< "${INSTANCE_IDS}"
+
+          if [[ "${#IDS[@]}" -ne 1 ]]; then
+            echo "Expected exactly one running application-host instance." >&2
+            echo "Found: ${INSTANCE_IDS}" >&2
+            exit 1
+          fi
+
+          INSTANCE_ID="${IDS[0]}"
+
+          echo "Deployment target: ${INSTANCE_ID}"
+          echo "instance_id=${INSTANCE_ID}" >> "${GITHUB_OUTPUT}"
+
+      - name: Calculate application checksum
+        id: app
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          APP_SHA256=$(sha256sum "${APP_PATH}" | awk '{print $1}')
+
+          echo "Application SHA256: ${APP_SHA256}"
+          echo "sha256=${APP_SHA256}" >> "${GITHUB_OUTPUT}"
+
+      - name: Build SSM deployment command
+        env:
+          INSTANCE_ID: ${{ steps.target.outputs.instance_id }}
+          APP_SHA256: ${{ steps.app.outputs.sha256 }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          python3 <<'PY'
+          import json
+          import os
+          import shlex
+
+          instance_id = os.environ["INSTANCE_ID"]
+          repository = os.environ["GITHUB_REPOSITORY"]
+          commit_sha = os.environ["GITHUB_SHA"]
+          expected_sha = os.environ["APP_SHA256"]
+
+          application_url = (
+              f"https://raw.githubusercontent.com/"
+              f"{repository}/{commit_sha}/"
+              f"projects/cloud-starter-kit/application/index.html"
+          )
+
+          script = f"""set -euo pipefail
+
+          APP_DIR=/opt/cloud-starter/html
+          CURRENT_FILE="$APP_DIR/index.html"
+          NEW_FILE="$APP_DIR/index.html.new"
+          PREVIOUS_FILE="$APP_DIR/index.html.previous"
+
+          install -d -m 0755 "$APP_DIR"
+
+          rm -f "$NEW_FILE" "$PREVIOUS_FILE"
+
+          curl \
+            --fail \
+            --silent \
+            --show-error \
+            --location \
+            {shlex.quote(application_url)} \
+            --output "$NEW_FILE"
+
+          ACTUAL_SHA=$(sha256sum "$NEW_FILE" | awk '{{print $1}}')
+
+          if [[ "$ACTUAL_SHA" != {shlex.quote(expected_sha)} ]]; then
+            echo "Downloaded application checksum does not match GitHub." >&2
+            rm -f "$NEW_FILE"
+            exit 1
+          fi
+
+          if [[ -f "$CURRENT_FILE" ]]; then
+            cp -p "$CURRENT_FILE" "$PREVIOUS_FILE"
+          fi
+
+          chmod 0644 "$NEW_FILE"
+          mv "$NEW_FILE" "$CURRENT_FILE"
+
+          if ! curl \
+            --fail \
+            --silent \
+            --show-error \
+            http://127.0.0.1:8080/ \
+            >/dev/null; then
+
+            echo "Local health check failed. Rolling back." >&2
+
+            if [[ -f "$PREVIOUS_FILE" ]]; then
+              mv "$PREVIOUS_FILE" "$CURRENT_FILE"
+            fi
+
+            exit 1
+          fi
+
+          rm -f "$PREVIOUS_FILE"
+
+          echo "Deployment completed for commit {commit_sha[:12]}"
+          """
+
+          payload = {
+              "InstanceIds": [instance_id],
+              "DocumentName": "AWS-RunShellScript",
+              "Comment": f"Deploy Cloud Starter Kit {commit_sha[:12]}",
+              "Parameters": {
+                  "commands": [script],
+              },
+          }
+
+          with open("/tmp/cloud-starter-deploy.json", "w", encoding="utf-8") as handle:
+              json.dump(payload, handle)
+          PY
+
+      - name: Deploy through Systems Manager
+        id: deploy
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          COMMAND_ID=$(aws ssm send-command \
+            --region "${AWS_REGION}" \
+            --cli-input-json file:///tmp/cloud-starter-deploy.json \
+            --query 'Command.CommandId' \
+            --output text)
+
+          echo "SSM command: ${COMMAND_ID}"
+          echo "command_id=${COMMAND_ID}" >> "${GITHUB_OUTPUT}"
+
+      - name: Wait for deployment
+        env:
+          INSTANCE_ID: ${{ steps.target.outputs.instance_id }}
+          COMMAND_ID: ${{ steps.deploy.outputs.command_id }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if ! aws ssm wait command-executed \
+            --region "${AWS_REGION}" \
+            --command-id "${COMMAND_ID}" \
+            --instance-id "${INSTANCE_ID}"; then
+
+            echo "Deployment command failed."
+
+            aws ssm get-command-invocation \
+              --region "${AWS_REGION}" \
+              --command-id "${COMMAND_ID}" \
+              --instance-id "${INSTANCE_ID}" \
+              --query '{Status:Status,ResponseCode:ResponseCode,Output:StandardOutputContent,Error:StandardErrorContent}' \
+              --output json || true
+
+            exit 1
+          fi
+
+          aws ssm get-command-invocation \
+            --region "${AWS_REGION}" \
+            --command-id "${COMMAND_ID}" \
+            --instance-id "${INSTANCE_ID}" \
+            --query '{Status:Status,ResponseCode:ResponseCode,Output:StandardOutputContent}' \
+            --output json
+
+      - name: Verify public HTTPS deployment
+        env:
+          EXPECTED_SHA: ${{ steps.app.outputs.sha256 }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          VERIFIED=false
+
+          for attempt in {1..10}; do
+            if curl \
+              --fail \
+              --silent \
+              --show-error \
+              --location \
+              --max-time 10 \
+              "${APP_URL}" \
+              --output /tmp/live-index.html; then
+
+              LIVE_SHA=$(sha256sum /tmp/live-index.html | awk '{print $1}')
+
+              if [[ "${LIVE_SHA}" == "${EXPECTED_SHA}" ]]; then
+                VERIFIED=true
+                break
+              fi
+
+              echo "HTTPS is reachable but content checksum has not updated yet."
+            fi
+
+            sleep 3
+          done
+
+          if [[ "${VERIFIED}" != "true" ]]; then
+            echo "Public HTTPS deployment verification failed." >&2
+            echo "Expected SHA256: ${EXPECTED_SHA}" >&2
+
+            if [[ -f /tmp/live-index.html ]]; then
+              LIVE_SHA=$(sha256sum /tmp/live-index.html | awk '{print $1}')
+              echo "Live SHA256:     ${LIVE_SHA}" >&2
+            fi
+
+            exit 1
+          fi
+
+          echo "Public HTTPS deployment verified."
