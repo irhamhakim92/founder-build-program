@@ -206,13 +206,13 @@ jobs:
           command = f"bash -lc {shlex.quote(script)}"
 
           payload = {
-            "InstanceIds": [instance_id],
-            "DocumentName": "AWS-RunShellScript",
-            "Comment": f"Deploy Cloud Starter Kit {commit_sha[:12]}",
-            "Parameters": {
-            "commands": [command],
-    },
-}
+              "InstanceIds": [instance_id],
+              "DocumentName": "AWS-RunShellScript",
+              "Comment": f"Deploy Cloud Starter Kit {commit_sha[:12]}",
+              "Parameters": {
+                  "commands": [command],
+              },
+          }
 
           with open("/tmp/cloud-starter-deploy.json", "w", encoding="utf-8") as handle:
               json.dump(payload, handle)
