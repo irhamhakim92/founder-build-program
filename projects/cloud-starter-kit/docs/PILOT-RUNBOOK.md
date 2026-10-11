@@ -569,14 +569,10 @@ The Cloud Starter Kit MVP is considered technically ready when all of the follow
 - [x] SNS alerts are configured
 - [x] Automated encrypted backups exist
 - [x] Snapshot-to-volume recovery has been validated
-- [x] Automated deployment from `main` works
+- [x] Automated deployment of the static MVP application from `main` works
 - [x] Deployment performs local health validation
 - [x] Deployment verifies public HTTPS content
 - [x] Pilot operations procedure is documented
-- [x] Automated deployment from `main` works
-+ [x] Automated deployment of the static MVP application from `main` works
-
----
 
 ## 16. Current MVP Status
 
