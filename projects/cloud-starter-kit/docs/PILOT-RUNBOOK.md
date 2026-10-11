@@ -4,6 +4,8 @@
 
 The Cloud Starter Kit provides a repeatable AWS environment for small businesses that need to host a website, web application, API, or internal tool without maintaining a full-time DevOps team.
 
+The current validated MVP pilot workload is a static web application served through Nginx. Support for APIs, dynamic application runtimes, databases, and customer-specific container workloads requires additional deployment configuration and is not yet part of the validated MVP.
+
 The MVP provides:
 
 - Infrastructure provisioned with Terraform
@@ -26,14 +28,13 @@ This runbook documents how a pilot environment is onboarded, deployed, monitored
 
 The Cloud Starter Kit MVP is intended for a simple single-server workload.
 
-Typical examples:
+The currently validated pilot workload includes:
 
 - Company website
 - Landing page
-- Small web application
-- Lightweight API
-- Internal business tool
-- Proof-of-concept application
+- Static proof-of-concept website
+
+The architecture is intended to evolve toward small web applications, APIs, and internal tools, but those workload types require additional deployment configuration before customer use.
 
 The current MVP is not designed for:
 
@@ -142,12 +143,20 @@ Before onboarding a pilot customer, collect:
 
 ### Application
 
+For the current validated static-web pilot:
+
+- Website content
+- Required domain
+- Expected public URL
+- Primary application contact
+
+For future dynamic workloads, additional discovery will be required for:
+
 - Application repository
-- Application type
-- Required runtime
-- Required environment variables
-- External API dependencies
-- Expected ports
+- Runtime
+- Environment variables
+- External dependencies
+- Application ports
 - Health-check endpoint
 
 ### AWS
@@ -210,6 +219,8 @@ Direct infrastructure development on `main` should be avoided.
 ## 6. Application Deployment
 
 Application deployment does not require SSH.
+
+The current automated deployment workflow is validated for the Cloud Starter Kit static HTML application. It deploys `projects/cloud-starter-kit/application/index.html` to the application host. Dynamic application or container deployments require a separate deployment implementation.
 
 The deployment path is:
 
@@ -562,12 +573,14 @@ The Cloud Starter Kit MVP is considered technically ready when all of the follow
 - [x] Deployment performs local health validation
 - [x] Deployment verifies public HTTPS content
 - [x] Pilot operations procedure is documented
+- [x] Automated deployment from `main` works
++ [x] Automated deployment of the static MVP application from `main` works
 
 ---
 
 ## 16. Current MVP Status
 
-The Cloud Starter Kit has completed its technical MVP validation.
+The Cloud Starter Kit has completed technical MVP validation for the current static web pilot workload.
 
 The next stage is:
 
