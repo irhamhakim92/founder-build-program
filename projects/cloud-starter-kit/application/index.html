@@ -1,67 +1,365 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Cloud Starter Kit</title>
-
+  <meta name="description" content="Legatra Business Cloud interactive SME operations prototype." />
   <style>
-    * {
-      box-sizing: border-box;
+    :root{
+      --bg:#f5f7fb; --panel:#fff; --panel2:#f8fafc; --ink:#111827; --muted:#64748b;
+      --line:#e5e7eb; --nav:#0f172a; --nav2:#172033; --brand:#2563eb; --brand2:#1d4ed8;
+      --green:#15803d; --greenbg:#dcfce7; --amber:#a16207; --amberbg:#fef3c7;
+      --red:#b91c1c; --redbg:#fee2e2; --purple:#6d28d9; --purplebg:#ede9fe;
+      --shadow:0 10px 30px rgba(15,23,42,.07);
     }
-
-    body {
-      margin: 0;
-      min-height: 100vh;
-      display: grid;
-      place-items: center;
-      font-family: Arial, sans-serif;
-      background: #0f172a;
-      color: #f8fafc;
-    }
-
-    main {
-      width: min(760px, 90%);
-      padding: 48px;
-      text-align: center;
-    }
-
-    h1 {
-      margin: 0 0 16px;
-      font-size: clamp(2.5rem, 7vw, 4rem);
-    }
-
-    p {
-      margin: 0 auto 24px;
-      max-width: 650px;
-      color: #cbd5e1;
-      font-size: 1.15rem;
-      line-height: 1.7;
-    }
-
-    .status {
-      display: inline-block;
-      padding: 10px 16px;
-      border: 1px solid #475569;
-      border-radius: 999px;
-      color: #e2e8f0;
-      font-size: 0.95rem;
-    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:var(--ink)}
+    button,input,select,textarea{font:inherit}
+    button{cursor:pointer}
+    .shell{display:grid;grid-template-columns:250px 1fr;min-height:100vh}
+    .sidebar{background:var(--nav);color:white;padding:22px 16px;position:sticky;top:0;height:100vh;overflow:auto}
+    .brand{display:flex;align-items:center;gap:11px;padding:4px 6px 22px}
+    .brandmark{width:38px;height:38px;border-radius:11px;background:linear-gradient(135deg,#60a5fa,#22c55e);display:grid;place-items:center;color:#0f172a;font-weight:900}
+    .brandname{font-weight:800;font-size:15px;line-height:1.1}.brandsub{font-size:11px;color:#94a3b8;margin-top:4px}
+    .workspace{margin:0 4px 16px;padding:11px 12px;border:1px solid #334155;background:#111c31;border-radius:10px}
+    .workspace b{display:block;font-size:12px}.workspace span{display:block;font-size:11px;color:#94a3b8;margin-top:4px}
+    .navlabel{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:#64748b;padding:10px 10px 5px}
+    .nav button{width:100%;border:0;background:transparent;color:#cbd5e1;text-align:left;padding:11px 12px;border-radius:9px;margin:2px 0;display:flex;align-items:center;gap:10px}
+    .nav button:hover,.nav button.active{background:#1e293b;color:#fff}
+    .ico{width:18px;opacity:.9}
+    .sidefoot{margin:22px 5px 0;padding-top:14px;border-top:1px solid #334155;color:#94a3b8;font-size:11px;line-height:1.7}
+    .statusdot{display:inline-block;width:7px;height:7px;background:#22c55e;border-radius:50%;margin-right:6px}
+    main{padding:26px 30px 50px;min-width:0}
+    .page{display:none}.page.active{display:block}
+    .topbar{display:flex;justify-content:space-between;gap:20px;align-items:center;margin-bottom:20px}
+    .title h1{font-size:25px;margin:0}.title p{margin:5px 0 0;color:var(--muted);font-size:13px}
+    .actions{display:flex;gap:9px;align-items:center;flex-wrap:wrap}
+    .btn{border:1px solid var(--line);background:#fff;color:var(--ink);padding:9px 13px;border-radius:9px;font-weight:700;font-size:13px;box-shadow:0 1px 1px rgba(0,0,0,.02)}
+    .btn:hover{background:#f8fafc}.btn.primary{background:var(--nav);border-color:var(--nav);color:#fff}.btn.primary:hover{background:#1e293b}
+    .btn.danger{color:var(--red)}.btn.small{padding:6px 9px;font-size:11px}
+    .prototype{background:#eef2ff;border:1px solid #c7d2fe;color:#3730a3;border-radius:11px;padding:12px 14px;font-size:12px;margin-bottom:16px;display:flex;justify-content:space-between;gap:12px;align-items:center}
+    .prototype strong{font-weight:800}
+    .metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+    .card{background:var(--panel);border:1px solid var(--line);border-radius:13px;padding:17px;box-shadow:var(--shadow)}
+    .metriclabel{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+    .metricvalue{font-size:28px;font-weight:850;margin:7px 0 3px}.metricsub{font-size:12px;color:var(--muted)}
+    .twocol{display:grid;grid-template-columns:1.6fr 1fr;gap:14px;margin-top:14px}
+    .equal{grid-template-columns:1fr 1fr}
+    .card h3{margin:0 0 14px;font-size:15px}.cardhead{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px}
+    table{width:100%;border-collapse:collapse;font-size:12px}
+    th,td{padding:11px 9px;border-bottom:1px solid var(--line);text-align:left;vertical-align:middle}
+    th{font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:800}
+    tbody tr:last-child td{border-bottom:0}
+    .badge{display:inline-block;border-radius:999px;padding:4px 8px;font-size:10px;font-weight:800}
+    .good{color:var(--green);background:var(--greenbg)}.warn{color:var(--amber);background:var(--amberbg)}
+    .bad{color:var(--red);background:var(--redbg)}.info{color:var(--purple);background:var(--purplebg)}
+    .toolbar{display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin-bottom:13px}
+    .input,.select,.textarea{border:1px solid var(--line);background:#fff;color:var(--ink);padding:9px 10px;border-radius:9px;outline:none}
+    .input:focus,.select:focus,.textarea:focus{border-color:#93c5fd;box-shadow:0 0 0 3px #dbeafe}
+    .search{min-width:250px;flex:1;max-width:420px}
+    .empty{padding:28px;text-align:center;color:var(--muted);font-size:12px}
+    .activity{display:grid;gap:11px}.activityrow{display:flex;gap:10px;align-items:flex-start}
+    .activitydot{width:9px;height:9px;background:var(--brand);border-radius:50%;margin-top:5px;flex:0 0 auto}
+    .activitytext b{display:block;font-size:12px}.activitytext span{display:block;font-size:11px;color:var(--muted);margin-top:3px}
+    .healthrow{display:flex;justify-content:space-between;gap:8px;padding:10px 0;border-bottom:1px solid var(--line);font-size:12px}.healthrow:last-child{border:0}
+    .docgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+    .doc{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px;min-width:0}
+    .docname{font-size:12px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:6px}
+    .docmeta{font-size:10px;color:var(--muted);line-height:1.5}
+    .docactions{margin-top:11px;display:flex;gap:7px}
+    .splitform{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .field label{display:block;font-size:11px;font-weight:700;color:#475569;margin-bottom:5px}
+    .field input,.field select,.field textarea{width:100%}
+    .field.full{grid-column:1/-1}
+    .progress{height:8px;background:#e5e7eb;border-radius:999px;overflow:hidden;margin-top:6px}.progress span{display:block;height:100%;background:var(--brand)}
+    .kpirow{margin-bottom:15px}.kpirow:last-child{margin-bottom:0}
+    .kpirow .line{display:flex;justify-content:space-between;font-size:11px;color:var(--muted)}
+    .modalwrap{display:none;position:fixed;inset:0;background:rgba(15,23,42,.5);z-index:50;align-items:center;justify-content:center;padding:20px}
+    .modalwrap.open{display:flex}.modal{background:#fff;border-radius:14px;width:min(620px,100%);max-height:90vh;overflow:auto;box-shadow:0 30px 80px rgba(15,23,42,.25)}
+    .modalhead,.modalfoot{padding:16px 18px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:10px;align-items:center}
+    .modalhead h3{margin:0;font-size:16px}.modalbody{padding:18px}.modalfoot{border-top:1px solid var(--line);border-bottom:0;justify-content:flex-end}
+    .close{border:0;background:transparent;font-size:22px;color:var(--muted)}
+    .toast{position:fixed;right:22px;bottom:22px;background:#111827;color:#fff;padding:11px 14px;border-radius:10px;font-size:12px;box-shadow:var(--shadow);opacity:0;transform:translateY(8px);transition:.2s;pointer-events:none;z-index:100}
+    .toast.show{opacity:1;transform:translateY(0)}
+    .dangerzone{border:1px solid #fecaca;background:#fff7f7;border-radius:12px;padding:15px}
+    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px}
+    @media(max-width:1050px){.metrics{grid-template-columns:repeat(2,1fr)}.docgrid{grid-template-columns:repeat(2,1fr)}}
+    @media(max-width:780px){.shell{grid-template-columns:1fr}.sidebar{height:auto;position:relative}.metrics,.twocol,.equal,.splitform,.docgrid{grid-template-columns:1fr}main{padding:20px 14px}.topbar{align-items:flex-start;flex-direction:column}.search{min-width:0;width:100%;max-width:none}}
   </style>
 </head>
-
 <body>
-  <main>
-    <h1>Cloud Starter Kit</h1>
-
-    <p>
-      Secure AWS infrastructure with HTTPS, automated monitoring,
-      encrypted backups and continuous deployment.
-    </p>
-
-    <div class="status">
-      Deployed automatically with GitHub Actions + AWS Systems Manager
+<div class="shell">
+  <aside class="sidebar">
+    <div class="brand"><div class="brandmark">L</div><div><div class="brandname">Legatra Business Cloud</div><div class="brandsub">SME Operations Workspace</div></div></div>
+    <div class="workspace"><b id="sideCompany">Northstar Supplies Sdn. Bhd.</b><span>Business Pilot Workspace</span></div>
+    <div class="nav">
+      <div class="navlabel">Workspace</div>
+      <button class="active" data-page="dashboard"><span class="ico">▦</span>Dashboard</button>
+      <button data-page="customers"><span class="ico">◉</span>Customers</button>
+      <button data-page="inventory"><span class="ico">▣</span>Inventory</button>
+      <button data-page="suppliers"><span class="ico">◇</span>Suppliers</button>
+      <button data-page="documents"><span class="ico">▤</span>Documents</button>
+      <div class="navlabel">Manage</div>
+      <button data-page="activity"><span class="ico">↺</span>Activity</button>
+      <button data-page="settings"><span class="ico">⚙</span>Settings</button>
     </div>
+    <div class="sidefoot">
+      <div><span class="statusdot"></span>Demo cloud status: Online</div>
+      <div>HTTPS: Protected</div>
+      <div>Backup policy: Daily</div>
+      <div>Region: Singapore</div>
+    </div>
+  </aside>
+
+  <main>
+    <div class="prototype"><div><strong>Interactive prototype</strong> — sample business data is stored only in this browser. No customer production data is uploaded.</div><button class="btn small" onclick="resetDemo()">Reset demo</button></div>
+
+    <section id="dashboard" class="page active">
+      <div class="topbar"><div class="title"><h1>Business Overview</h1><p id="dashboardSubtitle">Northstar Supplies Sdn. Bhd. · Today</p></div><div class="actions"><button class="btn" onclick="exportData()">Export demo data</button><button class="btn primary" onclick="openModal('stock')">Record stock movement</button></div></div>
+      <div class="metrics">
+        <div class="card"><div class="metriclabel">Customers</div><div class="metricvalue" id="mCustomers">0</div><div class="metricsub">Central customer records</div></div>
+        <div class="card"><div class="metriclabel">Units in stock</div><div class="metricvalue" id="mUnits">0</div><div class="metricsub" id="mSkus">Across 0 SKUs</div></div>
+        <div class="card"><div class="metriclabel">Low-stock items</div><div class="metricvalue" id="mLow">0</div><div class="metricsub">Items needing attention</div></div>
+        <div class="card"><div class="metriclabel">Documents</div><div class="metricvalue" id="mDocs">0</div><div class="metricsub">Registered business files</div></div>
+      </div>
+      <div class="twocol">
+        <div class="card"><div class="cardhead"><h3>Inventory snapshot</h3><button class="btn small" onclick="go('inventory')">View inventory</button></div><div id="dashInventory"></div></div>
+        <div class="card"><h3>Business data health</h3>
+          <div class="kpirow"><div class="line"><span>Inventory availability</span><b id="inventoryHealthText">0%</b></div><div class="progress"><span id="inventoryHealthBar" style="width:0%"></span></div></div>
+          <div class="kpirow"><div class="line"><span>Customer records</span><b>100%</b></div><div class="progress"><span style="width:100%"></span></div></div>
+          <div class="kpirow"><div class="line"><span>Prototype data persistence</span><b>Local</b></div><div class="progress"><span style="width:100%"></span></div></div>
+        </div>
+      </div>
+      <div class="twocol equal">
+        <div class="card"><div class="cardhead"><h3>Recent activity</h3><button class="btn small" onclick="go('activity')">View all</button></div><div class="activity" id="dashActivity"></div></div>
+        <div class="card"><h3>Managed cloud foundation</h3>
+          <div class="healthrow"><span>HTTPS endpoint</span><span class="badge good">Protected</span></div>
+          <div class="healthrow"><span>Infrastructure monitoring</span><span class="badge good">Configured</span></div>
+          <div class="healthrow"><span>Backup policy</span><span class="badge good">Daily</span></div>
+          <div class="healthrow"><span>Recovery validation</span><span class="badge good">Completed</span></div>
+          <div class="healthrow"><span>Prototype database</span><span class="badge info">Browser only</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="customers" class="page">
+      <div class="topbar"><div class="title"><h1>Customers</h1><p>Keep customer information in one searchable place.</p></div><button class="btn primary" onclick="openModal('customer')">+ Add customer</button></div>
+      <div class="card"><div class="toolbar"><input class="input search" id="customerSearch" placeholder="Search company, contact or phone..." oninput="renderCustomers()"><select class="select" id="customerStatus" onchange="renderCustomers()"><option value="">All statuses</option><option>Active</option><option>Follow up</option></select></div><div id="customersTable"></div></div>
+    </section>
+
+    <section id="inventory" class="page">
+      <div class="topbar"><div class="title"><h1>Inventory</h1><p>Track stock levels, movements and low-stock items.</p></div><div class="actions"><button class="btn" onclick="openModal('stock')">Record movement</button><button class="btn primary" onclick="openModal('item')">+ Add item</button></div></div>
+      <div class="card"><div class="toolbar"><input class="input search" id="inventorySearch" placeholder="Search item or SKU..." oninput="renderInventory()"><select class="select" id="inventoryFilter" onchange="renderInventory()"><option value="">All items</option><option value="low">Low stock</option></select></div><div id="inventoryTable"></div></div>
+    </section>
+
+    <section id="suppliers" class="page">
+      <div class="topbar"><div class="title"><h1>Suppliers</h1><p>Central supplier contact directory.</p></div><button class="btn primary" onclick="openModal('supplier')">+ Add supplier</button></div>
+      <div class="card"><div class="toolbar"><input class="input search" id="supplierSearch" placeholder="Search supplier..." oninput="renderSuppliers()"></div><div id="suppliersTable"></div></div>
+    </section>
+
+    <section id="documents" class="page">
+      <div class="topbar"><div class="title"><h1>Documents</h1><p>Prototype document register for invoices, contracts and operational files.</p></div><button class="btn primary" onclick="document.getElementById('filePicker').click()">Register file</button></div>
+      <input id="filePicker" type="file" hidden onchange="registerFile(this)">
+      <div class="card" style="margin-bottom:14px"><div class="prototype" style="margin:0;background:#fff7ed;border-color:#fed7aa;color:#9a3412"><div><strong>Prototype limitation:</strong> this demo stores file metadata only. Real cloud file storage and access control will be implemented before production customer use.</div></div></div>
+      <div class="toolbar"><input class="input search" id="documentSearch" placeholder="Search documents..." oninput="renderDocuments()"><select class="select" id="documentCategory" onchange="renderDocuments()"><option value="">All categories</option><option>Invoices</option><option>Contracts</option><option>Inventory</option><option>Company</option><option>Other</option></select></div>
+      <div class="docgrid" id="documentGrid"></div>
+    </section>
+
+    <section id="activity" class="page">
+      <div class="topbar"><div class="title"><h1>Activity</h1><p>See recent changes made inside the prototype workspace.</p></div><button class="btn" onclick="clearActivity()">Clear activity</button></div>
+      <div class="card"><div class="activity" id="activityList"></div></div>
+    </section>
+
+    <section id="settings" class="page">
+      <div class="topbar"><div class="title"><h1>Settings</h1><p>Customize this demo workspace.</p></div></div>
+      <div class="twocol equal">
+        <div class="card"><h3>Business profile</h3><div class="splitform">
+          <div class="field full"><label>Business name</label><input class="input" id="setCompany"></div>
+          <div class="field"><label>Primary contact</label><input class="input" id="setContact"></div>
+          <div class="field"><label>Email</label><input class="input" id="setEmail" type="email"></div>
+          <div class="field full"><button class="btn primary" onclick="saveSettings()">Save profile</button></div>
+        </div></div>
+        <div class="card"><h3>Prototype & cloud status</h3>
+          <div class="healthrow"><span>Workspace mode</span><span class="badge info">Demo prototype</span></div>
+          <div class="healthrow"><span>Data persistence</span><span>Browser localStorage</span></div>
+          <div class="healthrow"><span>Hosting foundation</span><span>Cloud Starter Kit</span></div>
+          <div class="healthrow"><span>Production authentication</span><span class="badge warn">Not yet implemented</span></div>
+          <div class="healthrow"><span>Production database</span><span class="badge warn">Not yet implemented</span></div>
+        </div>
+      </div>
+      <div class="dangerzone" style="margin-top:14px"><b>Reset prototype</b><p style="font-size:12px;color:var(--muted)">Delete browser changes and restore the original demo dataset.</p><button class="btn danger" onclick="resetDemo()">Reset all demo data</button></div>
+    </section>
   </main>
+</div>
+
+<div class="modalwrap" id="modalWrap" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <div class="modalhead"><h3 id="modalTitle">Add</h3><button class="close" onclick="closeModal()">×</button></div>
+    <div class="modalbody" id="modalBody"></div>
+    <div class="modalfoot"><button class="btn" onclick="closeModal()">Cancel</button><button class="btn primary" id="modalSave">Save</button></div>
+  </div>
+</div>
+<div class="toast" id="toast">Saved</div>
+
+<script>
+const KEY='legatra-business-cloud-prototype-v1';
+const seed={
+  settings:{company:'Northstar Supplies Sdn. Bhd.',contact:'Aiman Rahman',email:'aiman@northstar.example'},
+  customers:[
+    {id:1,company:'BrightPath Learning',contact:'Farah Ismail',phone:'07-880 2214',email:'farah@brightpath.example',status:'Active'},
+    {id:2,company:'Rimba Trading',contact:'Hafiz Rahman',phone:'07-332 1080',email:'hafiz@rimba.example',status:'Follow up'},
+    {id:3,company:'Metro Office Hub',contact:'Wei Jian',phone:'07-771 3201',email:'wj@metro.example',status:'Active'},
+    {id:4,company:'Southern Printworks',contact:'Nadia Lee',phone:'07-665 1402',email:'nadia@southern.example',status:'Active'}
+  ],
+  suppliers:[
+    {id:1,name:'Metro Office Supply',category:'Stationery',contact:'sales@metro.example',status:'Active'},
+    {id:2,name:'Prime POS Trading',category:'POS Supplies',contact:'07-662 3110',status:'Active'},
+    {id:3,name:'JB Print Solutions',category:'Printing',contact:'support@jbprint.example',status:'Review'}
+  ],
+  inventory:[
+    {id:1,name:'A4 Copy Paper',sku:'PAP-A4-80',qty:420,min:50},
+    {id:2,name:'Thermal Receipt Roll',sku:'POS-57MM',qty:18,min:25},
+    {id:3,name:'Printer Toner Black',sku:'TN-BLK-12',qty:7,min:10},
+    {id:4,name:'Document Folder Blue',sku:'FOL-BLU-A4',qty:68,min:20},
+    {id:5,name:'Shipping Label 100x150',sku:'LBL-100-150',qty:145,min:40}
+  ],
+  documents:[
+    {id:1,name:'Supplier_Invoice_1048.pdf',category:'Invoices',size:'842 KB',date:'2026-10-10'},
+    {id:2,name:'Customer_Price_List.xlsx',category:'Company',size:'96 KB',date:'2026-10-09'},
+    {id:3,name:'Stock_Count_October.xlsx',category:'Inventory',size:'124 KB',date:'2026-10-07'},
+    {id:4,name:'Supplier_Agreement.pdf',category:'Contracts',size:'2.2 MB',date:'2026-09-28'}
+  ],
+  activity:[
+    {id:1,title:'Prototype workspace created',detail:'Demo dataset initialized',time:'Today'},
+    {id:2,title:'Stock adjusted',detail:'Thermal Receipt Roll set to 18 units',time:'Today'},
+    {id:3,title:'Customer added',detail:'Southern Printworks',time:'Yesterday'}
+  ]
+};
+
+let data=load();
+function cloneSeed(){return JSON.parse(JSON.stringify(seed))}
+function load(){try{const raw=localStorage.getItem(KEY);return raw?JSON.parse(raw):cloneSeed()}catch(e){return cloneSeed()}}
+function save(){localStorage.setItem(KEY,JSON.stringify(data));renderAll()}
+function nextId(arr){return arr.reduce((m,x)=>Math.max(m,Number(x.id)||0),0)+1}
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}
+function moneySize(bytes){if(bytes<1024)return bytes+' B';if(bytes<1048576)return (bytes/1024).toFixed(1)+' KB';return (bytes/1048576).toFixed(1)+' MB'}
+function log(title,detail){data.activity.unshift({id:nextId(data.activity),title,detail,time:new Date().toLocaleString()});data.activity=data.activity.slice(0,60)}
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),1700)}
+
+document.querySelectorAll('.nav button').forEach(btn=>btn.addEventListener('click',()=>go(btn.dataset.page)));
+function go(page){
+  document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===page));
+  document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id===page));
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function tableEmpty(msg){return '<div class="empty">'+esc(msg)+'</div>'}
+function statusBadge(status){const c=status==='Active'?'good':status==='Follow up'||status==='Review'?'warn':'info';return '<span class="badge '+c+'">'+esc(status)+'</span>'}
+function stockBadge(x){return x.qty<=0?'<span class="badge bad">Out</span>':x.qty<=x.min?'<span class="badge warn">Low stock</span>':'<span class="badge good">Healthy</span>'}
+
+function renderDashboard(){
+  const total=data.inventory.reduce((s,x)=>s+Number(x.qty||0),0);
+  const low=data.inventory.filter(x=>Number(x.qty)<=Number(x.min)).length;
+  document.getElementById('mCustomers').textContent=data.customers.length;
+  document.getElementById('mUnits').textContent=total.toLocaleString();
+  document.getElementById('mSkus').textContent='Across '+data.inventory.length+' SKUs';
+  document.getElementById('mLow').textContent=low;
+  document.getElementById('mDocs').textContent=data.documents.length;
+  const healthy=data.inventory.length?Math.round((data.inventory.length-low)/data.inventory.length*100):100;
+  document.getElementById('inventoryHealthText').textContent=healthy+'%';
+  document.getElementById('inventoryHealthBar').style.width=healthy+'%';
+  document.getElementById('dashboardSubtitle').textContent=data.settings.company+' · '+new Date().toLocaleDateString();
+  const rows=[...data.inventory].sort((a,b)=>(a.qty-a.min)-(b.qty-b.min)).slice(0,5);
+  document.getElementById('dashInventory').innerHTML=rows.length?'<table><thead><tr><th>Item</th><th>SKU</th><th>Qty</th><th>Status</th></tr></thead><tbody>'+rows.map(x=>'<tr><td>'+esc(x.name)+'</td><td class="mono">'+esc(x.sku)+'</td><td>'+x.qty+'</td><td>'+stockBadge(x)+'</td></tr>').join('')+'</tbody></table>':tableEmpty('No inventory items yet.');
+  document.getElementById('dashActivity').innerHTML=data.activity.slice(0,5).map(a=>'<div class="activityrow"><span class="activitydot"></span><div class="activitytext"><b>'+esc(a.title)+'</b><span>'+esc(a.detail)+' · '+esc(a.time)+'</span></div></div>').join('')||tableEmpty('No recent activity.');
+}
+
+function renderCustomers(){
+  const q=(document.getElementById('customerSearch')?.value||'').toLowerCase(), st=document.getElementById('customerStatus')?.value||'';
+  const rows=data.customers.filter(x=>(!q||(x.company+' '+x.contact+' '+x.phone+' '+x.email).toLowerCase().includes(q))&&(!st||x.status===st));
+  document.getElementById('customersTable').innerHTML=rows.length?'<table><thead><tr><th>Company</th><th>Contact</th><th>Phone</th><th>Status</th><th></th></tr></thead><tbody>'+rows.map(x=>'<tr><td><b>'+esc(x.company)+'</b><div class="metricsub">'+esc(x.email)+'</div></td><td>'+esc(x.contact)+'</td><td>'+esc(x.phone)+'</td><td>'+statusBadge(x.status)+'</td><td><button class="btn small" onclick="deleteCustomer('+x.id+')">Delete</button></td></tr>').join('')+'</tbody></table>':tableEmpty('No matching customers.');
+}
+
+function renderInventory(){
+  const q=(document.getElementById('inventorySearch')?.value||'').toLowerCase(), f=document.getElementById('inventoryFilter')?.value||'';
+  const rows=data.inventory.filter(x=>(!q||(x.name+' '+x.sku).toLowerCase().includes(q))&&(!f||(f==='low'&&Number(x.qty)<=Number(x.min))));
+  document.getElementById('inventoryTable').innerHTML=rows.length?'<table><thead><tr><th>Item</th><th>SKU</th><th>Quantity</th><th>Low-stock level</th><th>Status</th><th></th></tr></thead><tbody>'+rows.map(x=>'<tr><td><b>'+esc(x.name)+'</b></td><td class="mono">'+esc(x.sku)+'</td><td>'+x.qty+'</td><td>'+x.min+'</td><td>'+stockBadge(x)+'</td><td><button class="btn small" onclick="deleteItem('+x.id+')">Delete</button></td></tr>').join('')+'</tbody></table>':tableEmpty('No matching inventory items.');
+}
+
+function renderSuppliers(){
+  const q=(document.getElementById('supplierSearch')?.value||'').toLowerCase();
+  const rows=data.suppliers.filter(x=>!q||(x.name+' '+x.category+' '+x.contact).toLowerCase().includes(q));
+  document.getElementById('suppliersTable').innerHTML=rows.length?'<table><thead><tr><th>Supplier</th><th>Category</th><th>Contact</th><th>Status</th><th></th></tr></thead><tbody>'+rows.map(x=>'<tr><td><b>'+esc(x.name)+'</b></td><td>'+esc(x.category)+'</td><td>'+esc(x.contact)+'</td><td>'+statusBadge(x.status)+'</td><td><button class="btn small" onclick="deleteSupplier('+x.id+')">Delete</button></td></tr>').join('')+'</tbody></table>':tableEmpty('No matching suppliers.');
+}
+
+function renderDocuments(){
+  const q=(document.getElementById('documentSearch')?.value||'').toLowerCase(), cat=document.getElementById('documentCategory')?.value||'';
+  const rows=data.documents.filter(x=>(!q||x.name.toLowerCase().includes(q))&&(!cat||x.category===cat));
+  document.getElementById('documentGrid').innerHTML=rows.length?rows.map(x=>'<div class="doc"><div class="docname">'+esc(x.name)+'</div><div class="docmeta">'+esc(x.category)+'<br>'+esc(x.size)+' · '+esc(x.date)+'</div><div class="docactions"><button class="btn small" onclick="changeDocCategory('+x.id+')">Category</button><button class="btn small danger" onclick="deleteDocument('+x.id+')">Remove</button></div></div>').join(''):tableEmpty('No matching documents.');
+}
+
+function renderActivity(){
+  document.getElementById('activityList').innerHTML=data.activity.map(a=>'<div class="activityrow"><span class="activitydot"></span><div class="activitytext"><b>'+esc(a.title)+'</b><span>'+esc(a.detail)+' · '+esc(a.time)+'</span></div></div>').join('')||tableEmpty('No activity yet.');
+}
+function renderSettings(){
+  document.getElementById('setCompany').value=data.settings.company||'';
+  document.getElementById('setContact').value=data.settings.contact||'';
+  document.getElementById('setEmail').value=data.settings.email||'';
+  document.getElementById('sideCompany').textContent=data.settings.company||'Business Workspace';
+}
+function renderAll(){renderDashboard();renderCustomers();renderInventory();renderSuppliers();renderDocuments();renderActivity();renderSettings()}
+
+function openModal(type){
+  const wrap=document.getElementById('modalWrap'), body=document.getElementById('modalBody'), title=document.getElementById('modalTitle'), saveBtn=document.getElementById('modalSave');
+  if(type==='customer'){
+    title.textContent='Add customer';
+    body.innerHTML='<div class="splitform"><div class="field full"><label>Company</label><input class="input" id="fCompany"></div><div class="field"><label>Contact person</label><input class="input" id="fContact"></div><div class="field"><label>Phone</label><input class="input" id="fPhone"></div><div class="field"><label>Email</label><input class="input" id="fEmail"></div><div class="field"><label>Status</label><select class="select" id="fStatus"><option>Active</option><option>Follow up</option></select></div></div>';
+    saveBtn.onclick=()=>{
+      const company=document.getElementById('fCompany').value.trim(); if(!company)return toast('Company name is required');
+      data.customers.unshift({id:nextId(data.customers),company,contact:document.getElementById('fContact').value.trim(),phone:document.getElementById('fPhone').value.trim(),email:document.getElementById('fEmail').value.trim(),status:document.getElementById('fStatus').value});
+      log('Customer added',company);save();closeModal();toast('Customer added');
+    };
+  } else if(type==='supplier'){
+    title.textContent='Add supplier';
+    body.innerHTML='<div class="splitform"><div class="field full"><label>Supplier name</label><input class="input" id="fSupplier"></div><div class="field"><label>Category</label><input class="input" id="fCategory"></div><div class="field"><label>Contact</label><input class="input" id="fSupplierContact"></div><div class="field"><label>Status</label><select class="select" id="fSupplierStatus"><option>Active</option><option>Review</option></select></div></div>';
+    saveBtn.onclick=()=>{
+      const name=document.getElementById('fSupplier').value.trim(); if(!name)return toast('Supplier name is required');
+      data.suppliers.unshift({id:nextId(data.suppliers),name,category:document.getElementById('fCategory').value.trim(),contact:document.getElementById('fSupplierContact').value.trim(),status:document.getElementById('fSupplierStatus').value});
+      log('Supplier added',name);save();closeModal();toast('Supplier added');
+    };
+  } else if(type==='item'){
+    title.textContent='Add inventory item';
+    body.innerHTML='<div class="splitform"><div class="field full"><label>Item name</label><input class="input" id="fItem"></div><div class="field"><label>SKU</label><input class="input" id="fSku"></div><div class="field"><label>Starting quantity</label><input class="input" id="fQty" type="number" min="0" value="0"></div><div class="field"><label>Low-stock threshold</label><input class="input" id="fMin" type="number" min="0" value="10"></div></div>';
+    saveBtn.onclick=()=>{
+      const name=document.getElementById('fItem').value.trim(),sku=document.getElementById('fSku').value.trim(); if(!name||!sku)return toast('Item name and SKU are required');
+      data.inventory.unshift({id:nextId(data.inventory),name,sku,qty:Number(document.getElementById('fQty').value||0),min:Number(document.getElementById('fMin').value||0)});
+      log('Inventory item added',name+' ('+sku+')');save();closeModal();toast('Item added');
+    };
+  } else if(type==='stock'){
+    title.textContent='Record stock movement';
+    body.innerHTML='<div class="splitform"><div class="field full"><label>Item</label><select class="select" id="fStockItem">'+data.inventory.map(x=>'<option value="'+x.id+'">'+esc(x.name)+' · '+esc(x.sku)+' · '+x.qty+' units</option>').join('')+'</select></div><div class="field"><label>Movement</label><select class="select" id="fMove"><option value="in">Stock in</option><option value="out">Stock out</option><option value="set">Set quantity</option></select></div><div class="field"><label>Quantity</label><input class="input" id="fMoveQty" type="number" min="0" value="1"></div><div class="field full"><label>Note</label><input class="input" id="fMoveNote" placeholder="Optional reference or reason"></div></div>';
+    saveBtn.onclick=()=>{
+      const item=data.inventory.find(x=>x.id===Number(document.getElementById('fStockItem').value)), move=document.getElementById('fMove').value, qty=Number(document.getElementById('fMoveQty').value||0), note=document.getElementById('fMoveNote').value.trim(); if(!item||qty<0)return;
+      const before=item.qty; if(move==='in')item.qty+=qty; else if(move==='out')item.qty=Math.max(0,item.qty-qty); else item.qty=qty;
+      log('Stock updated',item.name+': '+before+' → '+item.qty+(note?' · '+note:''));save();closeModal();toast('Stock updated');
+    };
+  }
+  wrap.classList.add('open');
+}
+function closeModal(){document.getElementById('modalWrap').classList.remove('open')}
+
+function deleteCustomer(id){const x=data.customers.find(x=>x.id===id);if(x&&confirm('Remove '+x.company+' from this prototype?')){data.customers=data.customers.filter(x=>x.id!==id);log('Customer removed',x.company);save();toast('Customer removed')}}
+function deleteSupplier(id){const x=data.suppliers.find(x=>x.id===id);if(x&&confirm('Remove '+x.name+'?')){data.suppliers=data.suppliers.filter(x=>x.id!==id);log('Supplier removed',x.name);save();toast('Supplier removed')}}
+function deleteItem(id){const x=data.inventory.find(x=>x.id===id);if(x&&confirm('Remove '+x.name+'?')){data.inventory=data.inventory.filter(x=>x.id!==id);log('Inventory item removed',x.name);save();toast('Item removed')}}
+function deleteDocument(id){const x=data.documents.find(x=>x.id===id);if(x&&confirm('Remove document metadata for '+x.name+'?')){data.documents=data.documents.filter(x=>x.id!==id);log('Document removed',x.name);save();toast('Document removed')}}
+function changeDocCategory(id){const x=data.documents.find(x=>x.id===id);if(!x)return;const c=prompt('Category: Invoices, Contracts, Inventory, Company or Other',x.category);if(c){x.category=c;log('Document category changed',x.name+' → '+c);save();toast('Category updated')}}
+function registerFile(input){const f=input.files&&input.files[0];if(!f)return;const category=prompt('Category: Invoices, Contracts, Inventory, Company or Other','Other')||'Other';data.documents.unshift({id:nextId(data.documents),name:f.name,category,size:moneySize(f.size),date:new Date().toISOString().slice(0,10)});log('Document registered',f.name+' (metadata only)');save();input.value='';toast('File metadata registered')}
+function clearActivity(){if(confirm('Clear prototype activity history?')){data.activity=[];save();toast('Activity cleared')}}
+function saveSettings(){data.settings.company=document.getElementById('setCompany').value.trim()||'Business Workspace';data.settings.contact=document.getElementById('setContact').value.trim();data.settings.email=document.getElementById('setEmail').value.trim();log('Business profile updated',data.settings.company);save();toast('Profile saved')}
+function exportData(){const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='legatra-business-cloud-demo-data.json';a.click();URL.revokeObjectURL(a.href);toast('Demo data exported')}
+function resetDemo(){if(confirm('Reset all prototype data to the original demo dataset?')){data=cloneSeed();save();toast('Demo reset')}}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal()});
+renderAll();
+</script>
 </body>
 </html>
